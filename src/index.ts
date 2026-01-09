@@ -44,6 +44,9 @@ const commands = [
   new SlashCommandBuilder()
     .setName('silence')
     .setDescription('Make Rupert stop responding until the next day'),
+  new SlashCommandBuilder()
+    .setName('unsilence')
+    .setDescription('Allow Rupert to start responding again'),
 ].map(command => command.toJSON());
 
 // Register slash commands with Discord
@@ -123,6 +126,11 @@ function silenceUntilEndOfDay(channelId: string): void {
   const endOfDay = new Date(now);
   endOfDay.setHours(23, 59, 59, 999);
   silencedUntil.set(channelId, endOfDay.getTime());
+}
+
+// Helper: Remove silence from a channel
+function unsilence(channelId: string): void {
+  silencedUntil.delete(channelId);
 }
 
 // Helper: Get recent message history for context
@@ -257,10 +265,14 @@ discord.on('messageCreate', handleMessage);
 discord.on('interactionCreate', async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
+  const channelId = interaction.channelId;
+
   if (interaction.commandName === 'silence') {
-    const channelId = interaction.channelId;
     silenceUntilEndOfDay(channelId);
     await interaction.reply("Alright, I'll keep quiet for the rest of the day 🤐");
+  } else if (interaction.commandName === 'unsilence') {
+    unsilence(channelId);
+    await interaction.reply("Alright, I'm back! What did I miss? 👋");
   }
 });
 
