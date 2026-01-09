@@ -55,7 +55,30 @@ Key traits:
 - You remember the context of the conversation and stay on topic
 - You're friendly and good-natured, never mean or hostile
 
-IMPORTANT: Respond ONLY with dialogue. Do NOT include stage directions, actions, narrative prefixes like "chimes in", "ahem", "*does something*", or any roleplay formatting. Just say what you would say directly, nothing else.`;
+CRITICAL: Your response must be PURE DIALOGUE ONLY. Do NOT include:
+- Stage directions or actions (like "ahem", "chimes in", "Rupert says")
+- Asterisks or italics for actions (*does something*)
+- Narrative descriptions
+- Your name before speaking
+- Any greeting prefixes if already in conversation
+
+Start your response immediately with what you want to say. Nothing else.`;
+
+// Helper: Clean response from any stage directions or narrative prefixes
+function cleanResponse(text: string): string {
+  // Remove common stage direction patterns at the start of the response
+  let cleaned = text
+    // Remove italicized stage directions like "chimes in casually" or "ahem"
+    .replace(/^[\s\n]*\*[^*]+\*[\s\n]*/i, '')
+    // Remove patterns like "Rupert says:" or "Rupert:"
+    .replace(/^[\s\n]*rupert\s*(says|chimes in|responds)?[\s:]+/i, '')
+    // Remove standalone italicized words at the start like "ahem" or "chimes in"
+    .replace(/^[\s\n]*(ahem|chimes in casually|chimes in|walks in|enters)[\s\n]+/i, '')
+    // Remove markdown italics at the very start
+    .replace(/^_([^_]+)_[\s\n]+/, '');
+
+  return cleaned.trim();
+}
 
 // Helper: Check if Rupert is silenced in a channel
 function isSilenced(channelId: string): boolean {
@@ -128,7 +151,10 @@ async function getClaudeResponse(context: string, isMentioned: boolean): Promise
     const response = message.content[0];
     if (response.type === 'text') {
       console.log('✓ Claude response received successfully');
-      return response.text;
+      const cleaned = cleanResponse(response.text);
+      console.log(`Original: "${response.text.substring(0, 50)}..."`);
+      console.log(`Cleaned: "${cleaned.substring(0, 50)}..."`);
+      return cleaned;
     }
 
     console.warn('⚠️ Claude returned non-text response');
