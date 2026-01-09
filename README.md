@@ -8,7 +8,7 @@ Rupert is a Discord bot powered by Claude AI that acts like a casual friend in y
 - **Non-Spammy**: Configurable random reply chance (default 8%)
 - **Always Responsive**: Replies when @mentioned
 - **Context Aware**: Remembers recent conversation history
-- **Silence Command**: `!rupert_silence` makes Rupert stop talking until the next day
+- **Slash Commands**: Modern Discord commands with autocomplete (e.g., `/silence`)
 - **Personality**: Casual, friendly, and opinionated like a real person
 
 ## Setup
@@ -54,8 +54,8 @@ CONTEXT_MESSAGE_LIMIT=15
    - GUILD MESSAGES
 4. Copy the bot token to your `.env` file
 5. Invite the bot to your server using OAuth2 URL Generator:
-   - Scopes: `bot`
-   - Permissions: `Send Messages`, `Read Messages/View Channels`, `Read Message History`
+   - Scopes: `bot`, `applications.commands`
+   - Bot Permissions: `Send Messages`, `Read Messages/View Channels`, `Read Message History`
 
 ## Usage
 
@@ -118,7 +118,11 @@ railway up
 
 ## Commands
 
-- `!rupert_silence` - Makes Rupert stop responding until the next day (resets at midnight)
+Rupert uses modern Discord slash commands with autocomplete:
+
+- `/silence` - Makes Rupert stop responding until the next day (resets at midnight)
+
+Simply type `/` in Discord to see all available commands with autocomplete!
 
 ## Configuration
 
