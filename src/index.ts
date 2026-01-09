@@ -12,9 +12,17 @@ const CONTEXT_MESSAGE_LIMIT = parseInt(process.env.CONTEXT_MESSAGE_LIMIT || '15'
 
 // Validate environment variables
 if (!DISCORD_TOKEN || !ANTHROPIC_API_KEY) {
-  console.error('Error: DISCORD_TOKEN and ANTHROPIC_API_KEY must be set in .env file');
+  console.error('Error: Missing required environment variables');
+  console.error('Please set the following environment variables:');
+  if (!DISCORD_TOKEN) console.error('  - DISCORD_TOKEN');
+  if (!ANTHROPIC_API_KEY) console.error('  - ANTHROPIC_API_KEY');
+  console.error('\nFor Railway: Set these in your project settings under "Variables"');
+  console.error('For local development: Add them to your .env file');
   process.exit(1);
 }
+
+console.log('🚀 Starting Rupert Discord bot...');
+console.log('✓ Environment variables loaded');
 
 // Initialize clients
 const discord = new Client({
