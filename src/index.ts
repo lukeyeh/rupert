@@ -165,7 +165,9 @@ async function handleMessage(message: Message): Promise<void> {
 
   try {
     // Show typing indicator
-    await message.channel.sendTyping();
+    if ('sendTyping' in message.channel) {
+      await message.channel.sendTyping();
+    }
 
     // Get conversation context
     const history = getMessageHistory(channelId);
