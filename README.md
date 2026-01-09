@@ -72,6 +72,50 @@ npm run build
 npm start
 ```
 
+## Deployment
+
+### Deploy to Railway
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new)
+
+1. **Create a Railway account** at [railway.app](https://railway.app)
+
+2. **Deploy from GitHub**:
+   - Click "New Project" in Railway
+   - Select "Deploy from GitHub repo"
+   - Choose this repository
+   - Railway will automatically detect the Node.js project and use the configuration from `railway.json`
+
+3. **Configure environment variables** in Railway dashboard:
+   - `DISCORD_TOKEN` - Your Discord bot token
+   - `ANTHROPIC_API_KEY` - Your Anthropic API key
+   - `RANDOM_REPLY_CHANCE` (optional) - Default: 8
+   - `CONTEXT_MESSAGE_LIMIT` (optional) - Default: 15
+
+4. **Deploy**: Railway will automatically build and deploy your bot
+
+The bot will restart automatically if it crashes and stay online 24/7.
+
+### Alternative: Railway CLI
+
+```bash
+# Install Railway CLI
+npm i -g @railway/cli
+
+# Login to Railway
+railway login
+
+# Initialize project
+railway init
+
+# Add environment variables
+railway variables set DISCORD_TOKEN=your_token_here
+railway variables set ANTHROPIC_API_KEY=your_api_key_here
+
+# Deploy
+railway up
+```
+
 ## Commands
 
 - `!rupert_silence` - Makes Rupert stop responding until the next day (resets at midnight)
