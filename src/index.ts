@@ -23,6 +23,8 @@ if (!DISCORD_TOKEN || !ANTHROPIC_API_KEY) {
 
 console.log('🚀 Starting Rupert Discord bot...');
 console.log('✓ Environment variables loaded');
+console.log(`✓ Discord token: ${DISCORD_TOKEN.substring(0, 10)}...`);
+console.log(`✓ Anthropic API key: ${ANTHROPIC_API_KEY.substring(0, 10)}...`);
 
 // Initialize clients
 const discord = new Client({
@@ -112,7 +114,7 @@ async function getClaudeResponse(context: string, isMentioned: boolean): Promise
       : `Here's the ongoing conversation:\n\n${context}\n\nChime in with a brief, natural response as Rupert:`;
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Cheap and fast model
+      model: 'claude-3-haiku-20240307', // Fast and cost-effective model
       max_tokens: 300,
       system: RUPERT_SYSTEM_PROMPT,
       messages: [
@@ -125,12 +127,18 @@ async function getClaudeResponse(context: string, isMentioned: boolean): Promise
 
     const response = message.content[0];
     if (response.type === 'text') {
+      console.log('✓ Claude response received successfully');
       return response.text;
     }
 
+    console.warn('⚠️ Claude returned non-text response');
     return "Sorry, I can't respond right now.";
   } catch (error) {
-    console.error('Error getting Claude response:', error);
+    console.error('❌ Error getting Claude response:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+    }
     return "My brain just glitched for a sec, what were we talking about?";
   }
 }
