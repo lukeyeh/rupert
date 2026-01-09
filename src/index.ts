@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Message, TextChannel } from 'discord.js';
+import { Client, GatewayIntentBits, Message, TextChannel, REST, Routes, SlashCommandBuilder } from 'discord.js';
 import Anthropic from '@anthropic-ai/sdk';
 import dotenv from 'dotenv';
 
@@ -38,6 +38,30 @@ const discord = new Client({
 const anthropic = new Anthropic({
   apiKey: ANTHROPIC_API_KEY,
 });
+
+// Slash command definitions
+const commands = [
+  new SlashCommandBuilder()
+    .setName('silence')
+    .setDescription('Make Rupert stop responding until the next day'),
+].map(command => command.toJSON());
+
+// Register slash commands with Discord
+async function registerCommands() {
+  if (!DISCORD_TOKEN) return;
+
+  const rest = new REST().setToken(DISCORD_TOKEN);
+  try {
+    console.log('🔄 Registering slash commands...');
+    await rest.put(
+      Routes.applicationCommands(discord.user!.id),
+      { body: commands },
+    );
+    console.log('✅ Slash commands registered successfully');
+  } catch (error) {
+    console.error('❌ Error registering slash commands:', error);
+  }
+}
 
 // State management
 const silencedUntil = new Map<string, number>(); // channelId -> timestamp
@@ -176,13 +200,6 @@ async function handleMessage(message: Message): Promise<void> {
 
   const channelId = message.channelId;
 
-  // Handle silence command
-  if (message.content.toLowerCase() === '!rupert_silence') {
-    silenceUntilEndOfDay(channelId);
-    await message.reply("Alright, I'll keep quiet for the rest of the day 🤐");
-    return;
-  }
-
   // Add message to history
   addToHistory(message);
 
@@ -226,14 +243,26 @@ async function handleMessage(message: Message): Promise<void> {
 }
 
 // Bot ready event
-discord.once('ready', () => {
+discord.once('ready', async () => {
   console.log(`✅ Rupert is online as ${discord.user?.tag}`);
   console.log(`🎲 Random reply chance: ${RANDOM_REPLY_CHANCE}%`);
   console.log(`💬 Context message limit: ${CONTEXT_MESSAGE_LIMIT}`);
+  await registerCommands();
 });
 
 // Message event
 discord.on('messageCreate', handleMessage);
+
+// Slash command handler
+discord.on('interactionCreate', async (interaction) => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === 'silence') {
+    const channelId = interaction.channelId;
+    silenceUntilEndOfDay(channelId);
+    await interaction.reply("Alright, I'll keep quiet for the rest of the day 🤐");
+  }
+});
 
 // Error handling
 discord.on('error', (error) => {
