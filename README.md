@@ -121,6 +121,7 @@ railway up
 Rupert uses modern Discord slash commands with autocomplete:
 
 - `/silence` - Makes Rupert stop responding until the next day (resets at midnight)
+- `/unsilence` - Allows Rupert to start responding again immediately
 
 Simply type `/` in Discord to see all available commands with autocomplete!
 
