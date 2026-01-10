@@ -95,6 +95,11 @@ CRITICAL RULES:
    - DO NOT invent topics, messages, or discussions that didn't happen
    - If you don't have enough context, admit it rather than making things up
 
+3. Each response should be FRESH and UNIQUE.
+   - Do NOT repeat the same ideas or phrases you may have said before
+   - Vary your responses and keep the conversation moving forward
+   - If the conversation is going in circles, change the subject or acknowledge it
+
 Start your response immediately with what you want to say. Nothing else.`;
 
 // Helper: Clean response from any stage directions or narrative prefixes
@@ -162,7 +167,9 @@ function addToHistory(message: Message): void {
 // Helper: Build conversation context from history
 function buildContextFromHistory(history: Message[], currentMessage: Message): string {
   const messages = [...history, currentMessage];
-  return messages
+  // Filter out bot messages to prevent Rupert from seeing his own responses
+  const userMessages = messages.filter(msg => !msg.author.bot);
+  return userMessages
     .map(msg => `${msg.author.username}: ${msg.content}`)
     .join('\n');
 }
