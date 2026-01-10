@@ -9,6 +9,7 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const RANDOM_REPLY_CHANCE = parseInt(process.env.RANDOM_REPLY_CHANCE || '8');
 const CONTEXT_MESSAGE_LIMIT = parseInt(process.env.CONTEXT_MESSAGE_LIMIT || '15');
+const REFERENCE_CONTEXT_SIZE = 5; // Number of messages before last reply to include for context
 
 // Validate environment variables
 if (!DISCORD_TOKEN || !ANTHROPIC_API_KEY) {
@@ -172,17 +173,32 @@ function buildContextFromHistory(channelId: string, history: Message[], currentM
   // Get the index of the last message when Rupert replied
   const lastIndex = lastReplyIndex.get(channelId) ?? -1;
 
-  // Only include messages that came AFTER Rupert's last reply
-  const newMessages = lastIndex === -1
-    ? messages
-    : messages.slice(lastIndex + 1);
+  let contextMessages: Message[];
+
+  if (lastIndex === -1) {
+    // First time replying in this channel - include all messages
+    contextMessages = messages;
+  } else {
+    // Hybrid approach: include reference context + new messages
+    // Include REFERENCE_CONTEXT_SIZE messages before last reply for context
+    const referenceStartIndex = Math.max(0, lastIndex - REFERENCE_CONTEXT_SIZE);
+    const referenceMessages = messages.slice(referenceStartIndex, lastIndex);
+
+    // Include all messages AFTER last reply (the new ones)
+    const newMessages = messages.slice(lastIndex + 1);
+
+    // Combine: reference context + new messages
+    contextMessages = [...referenceMessages, ...newMessages];
+  }
 
   // Filter out bot messages to prevent Rupert from seeing his own responses
-  const userMessages = newMessages.filter(msg => !msg.author.bot);
+  const userMessages = contextMessages.filter(msg => !msg.author.bot);
 
   console.log(`📊 Total messages in history: ${messages.length}`);
   console.log(`📊 Last reply was at index: ${lastIndex}`);
-  console.log(`📊 New messages since last reply: ${newMessages.length}`);
+  console.log(`📊 Reference messages for context: ${lastIndex === -1 ? 0 : Math.min(REFERENCE_CONTEXT_SIZE, lastIndex)}`);
+  console.log(`📊 New messages since last reply: ${lastIndex === -1 ? messages.length : Math.max(0, messages.length - lastIndex - 1)}`);
+  console.log(`📊 Total context messages: ${contextMessages.length}`);
   console.log(`📊 User messages (excluding bot): ${userMessages.length}`);
 
   return userMessages
