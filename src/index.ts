@@ -9,7 +9,7 @@ const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const RANDOM_REPLY_CHANCE = parseInt(process.env.RANDOM_REPLY_CHANCE || '8');
 const CONTEXT_MESSAGE_LIMIT = parseInt(process.env.CONTEXT_MESSAGE_LIMIT || '15');
-const REFERENCE_CONTEXT_SIZE = 5; // Number of messages before last reply to include for context
+const REFERENCE_CONTEXT_SIZE = 3; // Number of messages before last reply to include for context
 
 // Validate environment variables
 if (!DISCORD_TOKEN || !ANTHROPIC_API_KEY) {
@@ -97,10 +97,13 @@ CRITICAL RULES:
    - DO NOT invent topics, messages, or discussions that didn't happen
    - If you don't have enough context, admit it rather than making things up
 
-3. Each response should be FRESH and UNIQUE.
-   - Do NOT repeat the same ideas or phrases you may have said before
-   - Vary your responses and keep the conversation moving forward
-   - If the conversation is going in circles, change the subject or acknowledge it
+3. MAXIMUM VARIETY - Every response must be COMPLETELY FRESH:
+   - NEVER use the same sentence structure, phrases, or opening words twice
+   - NEVER repeat similar ideas even if phrased differently
+   - Vary your tone, length, and approach dramatically between responses
+   - Use different vocabulary, different sentence patterns, different perspectives
+   - Mix it up: be brief sometimes, detailed other times; serious sometimes, joking other times
+   - Avoid filler phrases like "I think", "you know", "just" - be direct and varied
 
 Start your response immediately with what you want to say. Nothing else.`;
 
