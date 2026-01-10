@@ -69,6 +69,7 @@ async function registerCommands() {
 // State management
 const silencedUntil = new Map<string, number>(); // channelId -> timestamp
 const channelMessageHistory = new Map<string, Message[]>(); // channelId -> messages
+const lastReplyIndex = new Map<string, number>(); // channelId -> index of last message when Rupert replied
 
 // Rupert's personality
 const RUPERT_SYSTEM_PROMPT = `You are Rupert, a casual guy who's been added to a Discord group chat. You're friendly, have opinions on things, and occasionally chime in with your thoughts like any regular person would in a group chat.
@@ -165,10 +166,25 @@ function addToHistory(message: Message): void {
 }
 
 // Helper: Build conversation context from history
-function buildContextFromHistory(history: Message[], currentMessage: Message): string {
+function buildContextFromHistory(channelId: string, history: Message[], currentMessage: Message): string {
   const messages = [...history, currentMessage];
+
+  // Get the index of the last message when Rupert replied
+  const lastIndex = lastReplyIndex.get(channelId) ?? -1;
+
+  // Only include messages that came AFTER Rupert's last reply
+  const newMessages = lastIndex === -1
+    ? messages
+    : messages.slice(lastIndex + 1);
+
   // Filter out bot messages to prevent Rupert from seeing his own responses
-  const userMessages = messages.filter(msg => !msg.author.bot);
+  const userMessages = newMessages.filter(msg => !msg.author.bot);
+
+  console.log(`📊 Total messages in history: ${messages.length}`);
+  console.log(`📊 Last reply was at index: ${lastIndex}`);
+  console.log(`📊 New messages since last reply: ${newMessages.length}`);
+  console.log(`📊 User messages (excluding bot): ${userMessages.length}`);
+
   return userMessages
     .map(msg => `${msg.author.username}: ${msg.content}`)
     .join('\n');
@@ -255,13 +271,18 @@ async function handleMessage(message: Message): Promise<void> {
 
     // Get conversation context
     const history = getMessageHistory(channelId);
-    const context = buildContextFromHistory(history, message);
+    const context = buildContextFromHistory(channelId, history, message);
 
     // Get Claude's response
     const response = await getClaudeResponse(context, isMentioned);
 
     // Send response
     await message.reply(response);
+
+    // Update the last reply index to current history length
+    // This marks where we are in the conversation
+    lastReplyIndex.set(channelId, history.length);
+    console.log(`✅ Updated last reply index for channel to: ${history.length}`);
   } catch (error) {
     console.error('Error handling message:', error);
   }
